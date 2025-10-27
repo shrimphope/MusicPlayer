@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, simpledialog
+from tkinter import ttk, filedialog, messagebox
 import os
 import pygame
 import threading
@@ -18,7 +18,24 @@ class MusicPlayer:
         self.root.configure(bg="#f0f0f0")
         
         # 初始化pygame混音器
-        pygame.mixer.init()
+        try:
+            pygame.mixer.init()
+        except pygame.error as e:
+            print(f"警告: 音频设备初始化失败: {e}")
+            print("程序将继续运行，但音频播放功能可能不可用")
+            # 在没有音频设备的情况下，使用SDL_AUDIODRIVER=dummy
+            try:
+                os.environ['SDL_AUDIODRIVER'] = 'dummy'
+                pygame.mixer.init()
+                print("使用虚拟音频设备初始化成功")
+            except Exception as e2:
+                print(f"虚拟音频设备初始化也失败: {e2}")
+                messagebox.showwarning(
+                    "警告",
+                    "无法初始化音频设备\n"
+                    "播放功能可能不可用\n\n"
+                    "请确保系统有可用的音频设备"
+                )
         
         # 初始化音乐管理器
         self.local_music_manager = LocalMusicManager()
@@ -51,8 +68,8 @@ class MusicPlayer:
         """加载配置文件"""
         config_file = "config.json"
         default_config = {
-            'default_music_folder': os.path.expanduser("~") + "\Music",
-            'download_folder': os.path.expanduser("~") + "\Music\Downloads",
+            'default_music_folder': os.path.join(os.path.expanduser("~"), "Music"),
+            'download_folder': os.path.join(os.path.expanduser("~"), "Music", "Downloads"),
             'volume': 0.7
         }
         
@@ -65,7 +82,7 @@ class MusicPlayer:
                         if key not in config:
                             config[key] = value
                     return config
-            except:
+            except Exception:
                 return default_config
         else:
             # 创建默认下载文件夹
@@ -329,12 +346,12 @@ class MusicPlayer:
                     self.root.after(0, lambda: self.update_progress_ui(current_pos, duration))
                     
                     # 检查是否播放结束
-                    if current_pos > 0 and pygame.mixer.music.get_busy() == False:
+                    if current_pos > 0 and not pygame.mixer.music.get_busy():
                         if self.is_repeat:
                             self.root.after(0, lambda: self.play_music(self.current_song))
                         else:
                             self.root.after(0, self.play_next)
-                except:
+                except Exception:
                     pass
             time.sleep(0.5)
     
@@ -352,6 +369,7 @@ class MusicPlayer:
         """格式化时间为分:秒"""
         minutes, seconds = divmod(int(seconds), 60)
         return f"{minutes:02d}:{seconds:02d}"
+
     
     def seek_position(self, event):
         """拖动进度条跳转播放位置"""
@@ -390,8 +408,8 @@ class MusicPlayer:
             try:
                 results = self.online_music_manager.search_music(keyword)
                 self.root.after(0, lambda: self.show_search_results(results))
-            except Exception as e:
-                self.root.after(0, lambda: messagebox.showerror("搜索失败", str(e)))
+            except Exception as error:
+                self.root.after(0, lambda err=error: messagebox.showerror("搜索失败", str(err)))
         
         search_thread = threading.Thread(target=do_search)
         search_thread.daemon = True

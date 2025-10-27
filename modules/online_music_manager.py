@@ -1,5 +1,4 @@
 import requests
-import json
 import os
 import re
 import time
@@ -163,7 +162,7 @@ class OnlineMusicManager:
                 results.append({
                     "title": title,
                     "artist": random.choice(mock_artists),
-                    "duration": f"0{random.randint(3, 5)}:{random.randint(10, 59):02d}",
+                    "duration": f"0{random.randint(3, 5)}:{random.randint(10, 59): 02d}",
                     "id": f"mock_{len(results) + 1}",
                     "source": "mock"
                 })
@@ -174,7 +173,7 @@ class OnlineMusicManager:
                 results.append({
                     "title": f"{keyword} - 歌曲{i+1}",
                     "artist": random.choice(mock_artists),
-                    "duration": f"0{random.randint(3, 5)}:{random.randint(10, 59):02d}",
+                    "duration": f"0{random.randint(3, 5)}:{random.randint(10, 59): 02d}",
                     "id": f"mock_custom_{i+1}",
                     "source": "mock"
                 })
@@ -276,12 +275,12 @@ class OnlineMusicManager:
         # 在实际应用中，这里应该尝试真实的下载
         # 这里只是为了演示功能，创建一个文本文件作为模拟
         with open(file_path, 'w', encoding='utf-8') as f:
-            f.write(f"这是一个模拟的音频文件\n")
+            f.write("这是一个模拟的音频文件\n")
             f.write(f"标题: {music_info.get('title', '未知歌曲')}\n")
             f.write(f"艺术家: {music_info.get('artist', '未知艺术家')}\n")
             f.write(f"时长: {music_info.get('duration', '未知时长')}\n")
-            f.write(f"\n注意: 这是一个演示用的模拟文件。在实际应用中，")
-            f.write(f"这里应该包含真实的音频数据。")
+            f.write("\n注意: 这是一个演示用的模拟文件。在实际应用中，")
+            f.write("这里应该包含真实的音频数据。")
         
         return file_path
     
